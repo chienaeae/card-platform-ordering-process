@@ -1,0 +1,42 @@
+{
+  "compilerOptions": {
+    "allowJs": true,
+    "moduleResolution": "node",
+    "module": "commonjs",
+    "pretty": true,
+    "inlineSourceMap": true,
+    "target": "es6",
+    "rootDir": "./src/",
+    "outDir": "./dist",
+    "strict": true,
+    "noImplicitAny": false, /* 允許不強制使用 any 型別 (針對 strict 政策)*/
+    "useUnknownInCatchVariables": false,  /* 允許在 err 的型別中使用 unknown (針對 strict 政策) */
+    "strictNullChecks": false, /* 允許 不對 null 和 undefined 進行強制檢查 (針對 strict 政策) */
+    "types": [
+      "node",
+      "jest",
+      "reflect-metadata"
+    ],
+    "lib": [
+      "es6"
+    ],
+    "resolveJsonModule": true,
+    "typeRoots": [
+      "./node_modules/@types",
+      "./src/@types"
+    ],
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "esModuleInterop": true
+  },
+  "include": [
+    "./src/**/*.ts",
+    "./src/**/*.js"
+  ],
+  "exclude": [
+    "./**/node_modules",
+    "./**/dist",
+    "./node_modules",
+    "./dist"
+  ]
+}
