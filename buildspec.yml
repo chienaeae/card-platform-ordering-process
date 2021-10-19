@@ -1,0 +1,48 @@
+version: 0.2
+
+env:
+  parameter-store:
+    ssh_key: github-ssh-key
+    ssh_pub: github-ssh-key.pub
+
+phases:
+  install:
+    runtime-versions:
+      nodejs: 14
+    commands:
+      - npm install -g typescript
+  pre_build:
+    commands:
+      - mkdir -p ~/.ssh
+      - echo "$ssh_key" > ~/.ssh/id_rsa
+      - echo "$ssh_pub" > ~/.ssh/id_rsa.pub
+      - chmod 600 ~/.ssh/id_rsa
+      - eval "$(ssh-agent -s)"
+      - git init
+      - git remote add origin $GIT_URL
+      - git fetch origin
+      - git branch
+      - git checkout -f $GIT_RESOLVED_BRANCH
+      - git submodule init
+      - git submodule update --recursive
+      - echo InstallingDependencies
+      - npm install
+      - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS
+        --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com
+  build:
+    commands:
+      - echo Testing
+      - npm run test
+      - npm run build
+      - docker build -t $IMAGE_REPO_NAME:$IMAGE_TAG .
+      - docker tag $IMAGE_REPO_NAME:$IMAGE_TAG
+        $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_REPO_NAME:$IMAGE_TAG
+  post_build:
+    commands:
+      - echo Pushing the docker image
+      - docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_REPO_NAME:$IMAGE_TAG
+      - printf '[{"name":"%s", "imageUri":"%s"}]' $CONTAINER_NAME
+        $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_REPO_NAME:$IMAGE_TAG > imagedefinitions.json
+
+artifacts:
+  files: imagedefinitions.json
