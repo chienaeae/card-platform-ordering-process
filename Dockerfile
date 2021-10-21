@@ -1,4 +1,4 @@
-FROM node:14.16.0-alpine
+FROM public.ecr.aws/bitnami/node:14-prod-debian-10
 
 COPY dist ./dist
 COPY node_modules ./node_modules
