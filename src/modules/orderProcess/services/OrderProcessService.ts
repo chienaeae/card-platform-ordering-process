@@ -9,11 +9,13 @@ export class OrderProcessService implements IOrderProcessService {
     }
 
     async processedOrder(orderId: string, cardIndex: number): Promise<void> {
+        console.log('in')
         const consumedResult = await this.repo.consumeOrder(orderId);
         if(!!consumedResult == true){
             const createdResult = await this.repo.createOrderingTrade(cardIndex,
                 consumedResult.buyOrderId,
                 consumedResult.sellOrderId);
         }
+        console.log('out')
     }
 }
