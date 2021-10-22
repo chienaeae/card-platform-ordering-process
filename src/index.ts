@@ -1,37 +1,30 @@
 import {OrderProcessPoller} from "./infra/OrderProcessPoller/app";
 import sqsConfig from "./infra/OrderProcessPoller/config/config";
-import {CardPlatformSequel} from "./reference/card-platform-library/src/modules/sequlize";
 import {OrderProcessRepo} from "./modules/orderProcess/repos/OrderProcessRepo";
+import {CardPlatformSequel} from "./reference/card-platform-library/src/modules/sequlize";
 
 
-
-// autocommit?: boolean;
-// isolationLevel?: Transaction.ISOLATION_LEVELS;
-// type?: Transaction.TYPES;
-// deferrable?: string | Deferrable;
-// /**
-//  * Parent transaction.
-//  */
-// transaction?: Transaction | null;
+export class Launcher {
+    private application?: OrderProcessPoller;
 
 
-// buy order
-// 價錢 取最低
-// 訂單時間取最舊
+    public async launchApp() {
+        const cardPlatformSequel = CardPlatformSequel.create(
+            {
+                username: 'administrator',
+                password: 'Ac9LVYFnCqhG8qpAmMQC',
+                host: 'card-platform-testing-mysql.ch3i84eqailq.ap-northeast-1.rds.amazonaws.com',
+                database: 'card_platform',
+                port: 3306
+            }, {logging: process.env.NODE_ENV === 'development' ? console.log : false})
 
-const buyOrderPrice: number = 10
-const buyCardIndex: number = 1
+        const repo = new OrderProcessRepo(cardPlatformSequel)
 
-async function main(){
-    const result = await new OrderProcessRepo({
-        username: 'administrator',
-        password: 'Ac9LVYFnCqhG8qpAmMQC',
-        host: 'card-platform-testing-mysql.ch3i84eqailq.ap-northeast-1.rds.amazonaws.com',
-        database: 'card_platform',
-        port: 3306
-    },).completedMatchedOrder('38534e81-b3f4-4a58-8b9a-db84fbc3a290', 'c2204d60-2ad5-481f-ab34-a24c79b597b7');
+        this.application = OrderProcessPoller.create(sqsConfig, repo);
 
-    console.log(result);
+        this.application.start()
+    }
 }
 
-main()
+
+new Launcher().launchApp();

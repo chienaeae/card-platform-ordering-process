@@ -5,9 +5,15 @@ import {
     MetaConfig,
     QueueConfig
 } from "../../reference/card-platform-library/src/modules/sqs/core/infra/BaseQueueClient";
+import {IOrderProcessService} from "../../modules/orderProcess/services/interfaces/IOrderProcessService";
+import {OrderProcessService} from "../../modules/orderProcess/services/OrderProcessService";
+import {IOrderProcessRepo} from "../../modules/orderProcess/repos/interfaces/IOrderProcessRepo";
 
 
-export class OrderProcessPoller extends OrderingQueuePoller{
+export class OrderProcessPoller extends OrderingQueuePoller {
+    private orderProcessService?: IOrderProcessService;
+    public counter = 0
+
     private constructor(config: QueueConfig & MetaConfig) {
         super(config);
     }
@@ -21,11 +27,13 @@ export class OrderProcessPoller extends OrderingQueuePoller{
         console.log('Not yet implement message handling')
     }
 
-    onMessageProcessed(messageBody: OrderingMessageProps, sqsMessage: Message) {
-        console.log('Not yet implement message_processed handling');
+    async onMessageProcessed(messageBody: OrderingMessageProps, sqsMessage: Message) {
+        this.counter++
+        await this.orderProcessService.processedOrder(messageBody.orderId,1)
     }
 
     onMessageReceived(messageBody: OrderingMessageProps, sqsMessage: Message) {
+        console.log(new Date(), this.counter)
         console.log('Not yet implement message_received handling');
     }
 
@@ -35,7 +43,9 @@ export class OrderProcessPoller extends OrderingQueuePoller{
     }
 
 
-    public static create(config: QueueConfig & MetaConfig): OrderProcessPoller {
-        return new OrderProcessPoller(config);
+    public static create(config: QueueConfig & MetaConfig, repo: IOrderProcessRepo): OrderProcessPoller {
+        const poller = new OrderProcessPoller(config);
+        poller.orderProcessService = new OrderProcessService(repo);
+        return poller;
     }
 }

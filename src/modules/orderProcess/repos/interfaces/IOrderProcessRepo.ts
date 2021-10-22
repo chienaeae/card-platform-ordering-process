@@ -1,9 +1,5 @@
 export interface IOrderProcessRepo {
-    buyMatchSellOrderId(orderId: string, traderId: string, cardIndex: number, orderPrice: number): Promise<string>
+    consumeOrder(orderId: string): Promise<any>
 
-    sellMatchBuyOrderId(orderId: string, traderId: string, cardIndex: number, orderPrice: number): Promise<string>
-
-    processedOrder(orderId: string): Promise<boolean>;
-
-    completedMatchedOrder(buyOrderId: string, sellOrderId: string): Promise<boolean>
+    createOrderingTrade(cardIndex: number, buyOrderId: string, sellOrderId: string): Promise<boolean>
 }

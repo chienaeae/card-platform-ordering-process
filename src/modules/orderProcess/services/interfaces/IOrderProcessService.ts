@@ -3,11 +3,5 @@ import {FlyingOrder} from "./FlyingOrder";
 
 
 export interface IOrderProcessService {
-    matchedOrder(order: FlyingOrder): Promise<string>;
-
-    processedOrder(order: FlyingOrder): Promise<boolean>
-
-    completedOrders(order: FlyingOrder, matchedOrderId: string): Promise<boolean>;
-
-    createOrderTrade(order: FlyingOrder, matchedOrderId: string): Promise<boolean>;
+    processedOrder(orderId: string, cardIndex: number): Promise<void>;
 }
