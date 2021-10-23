@@ -5,6 +5,7 @@ import {v4 as uuid} from 'uuid';
 import {CardOrder} from "../../../reference/card-platform-library/src/modules/sequlize/models/cardOrdering/CardOrder.model";
 
 export interface ConsumeResult {
+    consumedPrice: number,
     buyOrderId: string,
     sellOrderId: string
 }
@@ -78,7 +79,7 @@ export class OrderProcessRepo implements IOrderProcessRepo {
                 ['ordered_time', 'ASC']
             ],
             limit: 1,
-            attributes: ['order_id'],
+            attributes: ['order_id', 'order_price'],
             transaction: trans
         })
         /**
@@ -98,6 +99,7 @@ export class OrderProcessRepo implements IOrderProcessRepo {
             const matchedResult = await this.completedMatchedOrderPhase(orderId, found.order_id, trans);
             if (!!matchedResult == false) return null;
             return {
+                consumedPrice: found.order_price,
                 buyOrderId: orderId,
                 sellOrderId: found.order_id
             }
@@ -135,6 +137,7 @@ export class OrderProcessRepo implements IOrderProcessRepo {
                 ['ordered_time', 'ASC']
             ],
             limit: 1,
+            attributes: ['order_id', 'order_price'],
             transaction: trans
         })
         /**
@@ -154,6 +157,7 @@ export class OrderProcessRepo implements IOrderProcessRepo {
             const matchedResult = await this.completedMatchedOrderPhase(found.order_id, orderId, trans);
             if (!!matchedResult == false) return null;
             return {
+                consumedPrice: found.order_price,
                 buyOrderId: found.order_id,
                 sellOrderId: orderId
             }
@@ -248,12 +252,13 @@ export class OrderProcessRepo implements IOrderProcessRepo {
      *      確認 buyOrder 和 sellOrder 正確無誤
      *  (Step2.)
      *      產生交易結果
-     * @param cardIndex
-     * @param {string} buyOrderId
-     * @param {string} sellOrderId
+     * @param cardIndex 買賣卡片 index
+     * @param tradePrice 成交價
+     * @param {string} buyOrderId 買方訂單 ID
+     * @param {string} sellOrderId 賣方訂單 ID
      * @returns {Promise<boolean>}
      */
-    async createOrderingTrade(cardIndex, buyOrderId: string, sellOrderId: string): Promise<boolean> {
+    async createOrderingTrade(cardIndex, tradePrice: number, buyOrderId: string, sellOrderId: string): Promise<boolean> {
         const foundCount = await this.cardPlatformSequel.models.cardOrderModel.count({
             where: {
                 [Op.or]:
@@ -274,6 +279,7 @@ export class OrderProcessRepo implements IOrderProcessRepo {
         if (foundCount == 2) {
             const newOrderingTrade = await this.cardPlatformSequel.models.cardTradeModel.create({
                 trade_id: uuid(),
+                trade_price: tradePrice,
                 trade_card_index: cardIndex,
                 buy_order_id: buyOrderId,
                 sell_order_id: sellOrderId

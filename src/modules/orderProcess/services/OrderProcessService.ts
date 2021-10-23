@@ -13,6 +13,7 @@ export class OrderProcessService implements IOrderProcessService {
         const consumedResult = await this.repo.consumeOrder(orderId);
         if(!!consumedResult == true){
             const createdResult = await this.repo.createOrderingTrade(cardIndex,
+                consumedResult.consumedPrice,
                 consumedResult.buyOrderId,
                 consumedResult.sellOrderId);
         }
