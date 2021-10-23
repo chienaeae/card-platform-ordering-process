@@ -24,17 +24,13 @@ export class OrderProcessPoller extends OrderingQueuePoller {
     }
 
     async onMessageHandled(messageBody: OrderingMessageProps, sqsMessage: Message) {
-        this.counter++
-        console.log(new Date(), this.counter)
         await this.orderProcessService.processedOrder(messageBody.orderId,1)
     }
 
     async onMessageProcessed(messageBody: OrderingMessageProps, sqsMessage: Message) {
-        console.log('Not yet implement message processed')
     }
 
     async onMessageReceived(messageBody: OrderingMessageProps, sqsMessage: Message) {
-        console.log('Not yet implement message_received handling');
     }
 
     start(): void {

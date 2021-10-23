@@ -1,28 +1,28 @@
-import {OrderProcessPoller} from "./infra/OrderProcessPoller/app";
-import sqsConfig from "./infra/OrderProcessPoller/config/config";
+import {OrderProcessPoller} from "./infra/orderProcessPoller/app";
+import sqsConfig from "./infra/orderProcessPoller/config/config";
 import {OrderProcessRepo} from "./modules/orderProcess/repos/OrderProcessRepo";
 import {CardPlatformSequel} from "./reference/card-platform-library/src/modules/sequlize";
+import {config} from "./infra/sequelize/config/config";
+import {OrderingQueuePoller} from "./reference/card-platform-library/src/modules/sqs/orderingQueueFIFO/OrderingQueuePoller";
 
 
 export class Launcher {
-    private application?: OrderProcessPoller;
-
-
     public async launchApp() {
         const cardPlatformSequel = CardPlatformSequel.create(
-            {
-                username: 'administrator',
-                password: 'Ac9LVYFnCqhG8qpAmMQC',
-                host: 'card-platform-testing-mysql.ch3i84eqailq.ap-northeast-1.rds.amazonaws.com',
-                database: 'card_platform',
-                port: 3306
-            }, {logging: process.env.NODE_ENV === 'development' ? console.log : false})
+            config, {logging: process.env.NODE_ENV === 'development' ? console.log : false})
+        const application = OrderProcessPoller.create(
+            sqsConfig,
+            new OrderProcessRepo(cardPlatformSequel))
 
-        const repo = new OrderProcessRepo(cardPlatformSequel)
+        const sequelizeChecked = await cardPlatformSequel.authConnection()
+        const queueCheckedResult = await application.authQueuesStatus()
 
-        this.application = OrderProcessPoller.create(sqsConfig, repo);
+        if (!queueCheckedResult || !sequelizeChecked) {
+            console.log(`application initialized failed`)
+            process.exit(1);
+        }
 
-        this.application.start()
+        application.start();
     }
 }
 
