@@ -24,7 +24,7 @@ export class OrderProcessPoller extends OrderingQueuePoller {
     }
 
     async onMessageHandled(messageBody: OrderingMessageProps, sqsMessage: Message) {
-        await this.orderProcessService.processedOrder(messageBody.orderId,1)
+        await this.orderProcessService.processedOrder(messageBody.orderId,messageBody.orderIndex)
     }
 
     async onMessageProcessed(messageBody: OrderingMessageProps, sqsMessage: Message) {
